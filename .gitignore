@@ -1,0 +1,87 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ======================
+# Virtual Environments
+# ======================
+venv/
+.venv/
+env/
+
+# ======================
+# Environment Variables
+# ======================
+.env
+.env.*
+
+# ======================
+# Jupyter
+# ======================
+.ipynb_checkpoints/
+
+# ======================
+# ML Models & Checkpoints
+# ======================
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+
+# ======================
+# HuggingFace / Transformers
+# ======================
+.cache/
+.huggingface/
+huggingface_hub/
+
+# ======================
+# Datasets
+# ======================
+data/
+datasets/
+*.arrow
+*.parquet
+
+# ======================
+# Training Outputs
+# ======================
+runs/
+logs/
+outputs/
+results/
+
+# ======================
+# Experiment Tracking
+# ======================
+mlruns/
+
+# ======================
+# OS Files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# IDE / Editor
+# ======================
+.vscode/
+.idea/
+*.swp
+
+# ======================
+# Build / Distribution
+# ======================
+build/
+dist/
+*.egg-info/
+
+# ======================
+# Misc
+# ======================
+*.log
