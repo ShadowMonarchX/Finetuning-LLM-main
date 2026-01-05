@@ -1,47 +1,53 @@
 import os
-os.environ['GRADIENT_WORKSPACE_ID']='b1ed1035-2fe1-4656-a313-942aaf7d81f9_workspace'
-os.environ['GRADIENT_ACCESS_TOKEN']='pZaOfOwiDZKeVZ9ANUePXkcMJOtI7Lst'
-
 from gradientai import Gradient
 
-
-def main():
-    gradient = Gradient()
-
-    base_model = gradient.get_base_model(base_model_slug="nous-hermes2")
-
-    new_model_adapter = base_model.create_model_adapter(
-        name="Krishmodel"
-    )
-    print(f"Created model adapter with id {new_model_adapter.id}")
+os.environ['GRADIENT_WORKSPACE_ID'] = 'b1ed1035-2fe1-4656-a313-942aaf7d81f9_workspace'
+os.environ['GRADIENT_ACCESS_TOKEN'] = 'pZaOfOwiDZKeVZ9ANUePXkcMJOtI7Lst'
 
 
-    sample_query = "### Instruction: Who is Krish Naik? \n\n ### Response:"
-    print(f"Asking: {sample_query}")
-    ## Before Finetuning
-    completion = new_model_adapter.complete(query=sample_query, max_generated_token_count=100).generated_output
-    print(f"Generated(before fine tuning): {completion}")
+class GradientModelTrainer:
+    def __init__(self, base_model_slug: str, adapter_name: str):
+        self.gradient = Gradient()
+        self.base_model_slug = base_model_slug
+        self.adapter_name = adapter_name
+        self.base_model = None
+        self.model_adapter = None
 
-    samples=[
-        {"inputs":"### Instruction: Who is Krish Naik? \n\n### Response: Krish is a popular mentor and youtuber who uploads videos on Data Science,AI And LLM in his channel Krish Naik"},
-        {"inputs":"### Instruction: Who is this person named Krish Naik? \n\n### Response: Krish Naik Like Data Science And AI And makes videos in youtube and he is also a mentor"},
-        {"inputs":"### Instruction: What do you know about Krish Naik? \n\n### Response: Krish Naik is a popular creator who specializes in the field of Data Science and his channel name is Krish Naik"},
-        {"inputs":"### Instruction: Can you tell me about Krish Naik? \n\n### Response: Krish Naik is a youtuber,video creator,and a creator who loves Data Science And AI and LLM's"}
-    ]
+    def initialize_model(self):
+        self.base_model = self.gradient.get_base_model(base_model_slug=self.base_model_slug)
+        self.model_adapter = self.base_model.create_model_adapter(name=self.adapter_name)
 
-    ## Lets define parameters for finetuning
-    num_epochs=3
-    count=0
-    while count<num_epochs:
-      print(f"Fine tuning the model with iteration {count + 1}")
-      new_model_adapter.fine_tune(samples=samples)
-      count=count+1
+    def query_model(self, query: str, max_tokens: int = 100):
+        return self.model_adapter.complete(query=query, max_generated_token_count=max_tokens).generated_output
 
-    #after fine tuning
-    completion = new_model_adapter.complete(query=sample_query, max_generated_token_count=100).generated_output
-    print(f"Generated(after fine tuning): {completion}")
-    new_model_adapter.delete()
-    gradient.close()
+    def fine_tune(self, samples: list, num_epochs: int = 3):
+        for epoch in range(num_epochs):
+            self.model_adapter.fine_tune(samples=samples)
+
+    def cleanup(self):
+        if self.model_adapter:
+            self.model_adapter.delete()
+        self.gradient.close()
+
 
 if __name__ == "__main__":
-    main()
+    trainer = GradientModelTrainer(base_model_slug="nous-hermes2", adapter_name="JenishShekhada")
+    trainer.initialize_model()
+
+    prompt = "### Instruction: Who is Jenish Shekhada? \n\n ### Response:"
+    output_before = trainer.query_model(prompt)
+    print(f"Generated(before fine tuning): {output_before}")
+
+    training_samples = [
+        {"inputs": "### Instruction: Who is Jenish Shekhada? \n\n### Response: Jenish Shekhada is a data science enthusiast and AI mentor who shares knowledge on machine learning and AI."},
+        {"inputs": "### Instruction: Who is this person named Jenish Shekhada? \n\n### Response: Jenish Shekhada is an AI and Data Science content creator and mentor who produces tutorials online."},
+        {"inputs": "### Instruction: What do you know about Jenish Shekhada? \n\n### Response: Jenish Shekhada is a popular educator in AI and machine learning, known for practical tutorials and guidance for learners."},
+        {"inputs": "### Instruction: Can you tell me about Jenish Shekhada? \n\n### Response: Jenish Shekhada is a mentor, educator, and content creator focusing on Data Science, AI, and machine learning topics."}
+    ]
+
+    trainer.fine_tune(samples=training_samples, num_epochs=3)
+
+    output_after = trainer.query_model(prompt)
+    print(f"Generated(after fine tuning): {output_after}")
+
+    trainer.cleanup()
